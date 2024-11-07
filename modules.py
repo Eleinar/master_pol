@@ -4,8 +4,7 @@ Integer,
 String,
 Float,
 Date,
-TIMESTAMP.
-Ima
+TIMESTAMP
 )
 
 from sqlalchemy.ext.declarative import declarative_base
