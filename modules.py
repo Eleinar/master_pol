@@ -16,14 +16,14 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 class ProductTypes(Base):
-    __tablename__ = "ProductTypes"
+    __tablename__ = "productTypes"
     
     id = Column(Integer, primary_key = True)
     type_name = Column(String)
     coefficient = Column(Float)
     
 class Products(Base):
-    __tablename_ = "Products"
+    __tablename__ = "products"
     
     id = Column(Integer, primary_key = True)
     product_type_id = Column(Integer, ForeignKey(ProductTypes.id))
@@ -32,31 +32,35 @@ class Products(Base):
     min_partner__price = Column(Float)
 
 class SalesLocations(Base):
-    __tablename__ = "SalesLocations"
+    __tablename__ = "salesLocations"
     
     id = Column(Integer, primary_key = True)
     location_name = Column(String)
     
 class CompanyType(Base):
-    __tablename__ = "CompanyType"
+    __tablename__ = "companytype"
     
     id = Column(Integer, primary_key = True)
     company_type = Column(String)
     
 class Partners(Base):
-    __tablename__ = "Partners"
+    __tablename__ = "partners"
     
     id = Column(Integer, primary_key = True)
     type_id = Column(Integer, ForeignKey(CompanyType.id))
     company_name = Column(String)
-    legal_adress = Column(String)
+    legal_address = Column(String)
     inn = Column(String)
     director_name = Column(String)
     phone = Column(String)
     email = Column(String)
     rating = Column(Integer)
     
+    type_rel = relationship("CompanyType")
+    
 class Partner_Products(Base):
+    __tablename__ = "partner_Products"
+    
     id = Column(Integer, primary_key = True)
     partner_id = Column(Integer,ForeignKey(Partners.id))
     product_id = Column(Integer,ForeignKey(Products.id))
@@ -64,25 +68,25 @@ class Partner_Products(Base):
     delivery_date = Column(Date)
     
 class HealthStatuses(Base):
-    __tablename__ = "HealthStatuses"
+    __tablename__ = "healthStatuses"
     
     id = Column(Integer, primary_key = True)
     status = Column(String)
     
 class FamilyStatuses(Base):
-    __tablename__ = "FamilyStatuses"
+    __tablename__ = "familyStatuses"
     
     id = Column(Integer, primary_key = True)
     status = Column(String)
     
 class Roles(Base):
-    __tablename__ = "Roles"
+    __tablename__ = "roles"
     
     id = Column(Integer, primary_key = True)
     role_name = Column(String)
     
 class Employees(Base):
-    __tablename__ = "Employees"
+    __tablename__ = "employees"
     
     id = Column(Integer, primary_key = True)
     emloyee_name = Column(String)
@@ -93,7 +97,7 @@ class Employees(Base):
     role_id = Column(Integer, ForeignKey(Roles.id))
     
 class AccessRecords(Base):
-    __tablename__ = "AccessRecords"
+    __tablename__ = "accessRecords"
     
     id = Column(Integer, primary_key = True)
     entry_time = Column(TIMESTAMP)
@@ -101,20 +105,20 @@ class AccessRecords(Base):
     employee_id = Column(Integer, ForeignKey(Employees.id))
     
 class MaterialTypes(Base):
-    __tablename__ = "MaerialTypes"
+    __tablename__ = "maerialTypes"
     
     id = Column(Integer, primary_key = True)
     type_name = Column(String)
     defect_percent = Column(Float)
     
 class UnitTypes(Base):
-    __tablename__ = "UnitTypes"
+    __tablename__ = "unitTypes"
     
     id = Column(Integer, primary_key = True)
     unit_type = Column(String)
     
 class Materials(Base):
-    __tablename__ = "Materials"
+    __tablename__ = "materials"
     
     id = Column(Integer, primary_key = True)
     material_type_id = Column(Integer, ForeignKey(MaterialTypes.id))
@@ -127,19 +131,19 @@ class Materials(Base):
     min_quantity = Column(Integer)
     
 class Warehouses(Base):
-    __tablename__ = "Warehouses"
+    __tablename__ = "warehouses"
     
     id = Column(Integer, primary_key = True)
     warehouse_name = Column(String)
     
 class OperationType(Base):
-    __tablename__ = "OperationType"
+    __tablename__ = "operationType"
     
     id = Column(Integer, primary_key = True)
     operation_type = Column(String)
     
 class MaterialHistory(Base):
-    __tablename__ = "MaterialHistory"
+    __tablename__ = "materialHistory"
     
     id = Column(Integer, primary_key = True)
     material_id = Column(Integer, ForeignKey(Materials.id))
@@ -147,3 +151,10 @@ class MaterialHistory(Base):
     operation_tye_id = Column(Integer, ForeignKey(OperationType.id))
     quantity = Column(Integer)
     warehouse_id = Column(Integer, ForeignKey(Warehouses.id))
+
+def create_connection():
+    engine = create_engine("postgresql://postgres@localhost:5432/floor", echo = True)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session(bind=engine)
+    return session

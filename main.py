@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
-from login_window import LoginWindow, MainWindow
-
+from partners_window import PartnrerWindow
 app = QApplication([])
-window = MainWindow()
+window = PartnrerWindow()
 window.show()
 app.exec()
