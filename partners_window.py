@@ -1,95 +1,166 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QScrollArea, QFrame, QLabel, QSizePolicy)
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QScrollArea, QFrame, QLabel, QDialog, QMessageBox)
+from PySide6.QtGui import QFont
+from sales_history_window import SalesHistoryWindow
+from sqlalchemy import func
+import sys
+
+
 import modules
 from add_partner_window import AddPartnerWindow
-from sqlalchemy import func, or_
+from edit_partner_window import EditPartnerWindow
 
-
-class PartnrerWindow(QMainWindow):
+class PartnerWindow(QMainWindow):
     def __init__(self):
-        super(PartnrerWindow, self).__init__()
+        super(PartnerWindow, self).__init__()
         self.setWindowTitle("Список партнёров")
-        #установить размер окна
+        self.setGeometry(100, 100, 800, 600)
         
-        # подключение к базе
-        self.db = modules.create_connection()
+        # Подключение к базе данных
+        try:
+            self.db = modules.create_connection()
+        except Exception as e:
+            msg = QMessageBox.critical(self, "Ошибка", f"Не удалось подключиться к базе: {e}")
+            sys.exit()
         
+        # Основной виджет
         main_widget = QWidget()
-        main_layot = QHBoxLayout(main_widget)
+        main_layout = QHBoxLayout(main_widget)
         
-        button_layout = QVBoxLayout()
-        add_partner_btn = QPushButton("Новый партнёр")
-        history_btn = QPushButton("История реализации")
-        partners_btn = QPushButton("Список партнёров")
+        # Левое меню с кнопками
+        menu_widget = QWidget()
+        menu_layout = QVBoxLayout(menu_widget)
+        menu_layout.setSpacing(10)
         
-        add_partner_btn.clicked.connect(self.onClickAddPartner)
+        new_partner_button = QPushButton("Новый партнёр")
+        new_partner_button.clicked.connect(self.onClickAddPartner)
+        history_button = QPushButton("История реализации")
+        history_button.clicked.connect(self.onClickHistory)
+        partner_list_button = QPushButton("Список партнёров")
+
+        for button in [new_partner_button, history_button, partner_list_button]:
+            button.setFixedWidth(120)
+            button.setFixedHeight(40)
+            button.setStyleSheet("background-color: #67BA80")
         
-        for button in (add_partner_btn, history_btn, partners_btn):
-            button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-            button.setStyleSheet("background-color: #67BA80; color: white; font-family: 'Segoe UI';")
-            button_layout.addWidget(button)
-            
-        button_layout.addStretch()
+        menu_layout.addWidget(new_partner_button)
+        menu_layout.addWidget(history_button)
+        menu_layout.addWidget(partner_list_button)
+        menu_layout.addStretch(1)
         
+        # Прокручиваемый список партнёров
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         
-        card_container = QWidget()
-        card_layout  = QVBoxLayout(card_container)
+        self.card_container = QWidget()
+        self.card_layout = QVBoxLayout(self.card_container)
+        self.card_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         
+        # Загрузка карточек партнёров
+        self.loadPartnerCards()
+        
+        self.card_container.setLayout(self.card_layout)
+        scroll_area.setWidget(self.card_container)
+        
+        # Основной макет
+        main_layout.addWidget(menu_widget)
+        main_layout.addWidget(scroll_area)
+        self.setCentralWidget(main_widget)
+
+    def loadPartnerCards(self):
         partners = self.db.query(modules.Partners).all()
         for partner in partners:
-            card = self.createPartnerCard(partner)
-            card_layout.addWidget(card)
-    
-        card_container.setLayout(card_layout)
-        scroll_area.setWidget(card_container)
-        
-        center_layout = QVBoxLayout()
-        center_layout.addWidget(scroll_area)
-        
-        main_layot.addLayout(button_layout)
-        main_layot.addLayout(center_layout, 1)
-        
-        self.setCentralWidget(main_widget)
-    
-    # Создание карточки партнёра
-    def createPartnerCard(self, partner):
+            card = self.create_partner_card(partner)
+            self.card_layout.addWidget(card)
+
+    def create_partner_card(self, partner):
+    # Запрос общего объема реализации продукции для данного партнёра
+        total_sales = self.db.query(modules.Partner_Products) \
+                             .filter_by(partner_id=partner.id) \
+                             .with_entities(func.sum(modules.Partner_Products.quantity)) \
+                             .scalar() or 0  # Если нет данных, по умолчанию 0
+
+        # Расчёт скидки на основе общего объема реализации
+        discount = self.calculate_discount(total_sales)
+
+        # Карточка партнёра
         card = QFrame()
         card.setStyleSheet("background-color: #F4E8D3; border-radius: 8px;")
-        card.setFrameShape(QFrame.StyledPanel)
-        card.setFixedHeight(180)  # Увеличим высоту карточки для нового порядка
-    
-        layout = QVBoxLayout(card)
-    
-        top_layout = QHBoxLayout()
-        type_name_label = QLabel(partner.type_rel.company_type + " | " + partner.company_name)
-    
-        # Установим стили для типа и названия
-        type_name_label.setAlignment(Qt.AlignLeft)
-        type_name_label.setStyleSheet("font-family: 'Segoe UI'; font-size: 14px;")
-    
-        # Добавляем тип и название в горизонтальный макет
-        top_layout.addWidget(type_name_label)
-        top_layout.addStretch()  # Добавляем растяжение, чтобы элементы не сжимались
-    
-        # Информация о директоре, телефоне и рейтинге
-        director_label = QLabel(partner.director_name)
-        phone_label = QLabel(partner.phone)
-        rating_label = QLabel(f"Rating: {partner.rating}")
-    
-    # Применим стили ко всем оставшимся полям
-        for label in (director_label, phone_label, rating_label):
-            label.setAlignment(Qt.AlignLeft)
-            label.setStyleSheet("font-family: 'Segoe UI'; font-size: 14px;")
+        card.setFixedSize(400, 150)
 
-        # Добавляем виджеты в макет карточки
-        layout.addWidget(type_name_label)
+        layout = QVBoxLayout(card)
+
+        # Верхняя строка с типом и названием партнёра
+        top_layout = QHBoxLayout()
+        type_label = QLabel(f"{partner.type_rel.company_type} |")
+        type_label.setFont(QFont("Segoe UI", 12, QFont.Bold))
+        type_label.setStyleSheet("color: black;")
+
+        name_label = QLabel(partner.company_name)
+        name_label.setFont(QFont("Segoe UI", 12, QFont.Bold))
+        name_label.setStyleSheet("color: black;")
+
+        top_layout.addWidget(type_label)
+        top_layout.addWidget(name_label)
+        top_layout.addStretch(1)
+
+        # Метка скидки
+        discount_label = QLabel(f"Скидка: {discount} %")  # Отображаем рассчитанную скидку
+        discount_label.setFont(QFont("Segoe UI", 12, QFont.Bold))
+        discount_label.setStyleSheet("color: black;")
+        top_layout.addWidget(discount_label)
+
+        # Данные о директоре, телефоне и рейтинге
+        director_label = QLabel(f"Директор: {partner.director_name}")
+        phone_label = QLabel(f"{partner.phone}")
+        rating_label = QLabel(f"Рейтинг: {partner.rating}")
+
+        for label in (director_label, phone_label, rating_label):
+            label.setFont(QFont("Segoe UI", 10))
+            label.setStyleSheet("color: black;")
+
+        # Добавляем всё в макет карточки
+        layout.addLayout(top_layout)
         layout.addWidget(director_label)
         layout.addWidget(phone_label)
         layout.addWidget(rating_label)
-    
+
         return card
-    
-    def onClickAddPartner(self):
+
+    @staticmethod
+    def calculate_discount(total_sales):
+        if total_sales < 10000:
+            return 0
+        elif 10000 <= total_sales < 50000:
+            return 5
+        elif 50000 <= total_sales < 300000:
+            return 10
+        else:
+            return 15
+
         
+    def onClickAddPartner(self):
+        dialog = AddPartnerWindow(self.db)
+        if dialog.exec() == QDialog.Accepted:
+            self.refreshPartnersList()
+            
+    def refreshPartnersList(self):
+        # Очистка текущих карточек
+        for i in reversed(range(self.card_layout.count())): 
+            widget_to_remove = self.card_layout.itemAt(i).widget()
+            if widget_to_remove is not None:
+                widget_to_remove.deleteLater()
+
+        # Загрузка и отображение обновлённого списка партнёров
+        self.loadPartnerCards()
+
+    def onClickEditPartner(self, partner_id):
+        dialog = EditPartnerWindow(self.db, partner_id)
+
+        if dialog.exec() == QDialog.Accepted:
+            self.refreshPartnersList()
+
+    def onClickHistory(self):
+        self.history_window = SalesHistoryWindow(self.db)
+        self.history_window.show()
+        self.close()

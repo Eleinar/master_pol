@@ -19,14 +19,14 @@ location_name varchar(100)
 
 create table CompanyType(
 id serial primary key,
-compay_type varchar(5)
+company_type varchar(5)
 );
 
 create table Partners(
 id serial primary key,
 type_id int references CompanyType(id),
 company_name varchar(50),
-legal_adress varchar(100),
+legal_address varchar(100),
 inn varchar(10),
 director_name varchar(50),
 phone varchar(50),

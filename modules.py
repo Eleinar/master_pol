@@ -59,7 +59,7 @@ class Partners(Base):
     type_rel = relationship("CompanyType")
     
 class Partner_Products(Base):
-    __tablename__ = "partner_Products"
+    __tablename__ = "partner_products"
     
     id = Column(Integer, primary_key = True)
     partner_id = Column(Integer,ForeignKey(Partners.id))
@@ -68,7 +68,7 @@ class Partner_Products(Base):
     delivery_date = Column(Date)
     
 class HealthStatuses(Base):
-    __tablename__ = "healthStatuses"
+    __tablename__ = "healthstatuses"
     
     id = Column(Integer, primary_key = True)
     status = Column(String)
@@ -97,7 +97,7 @@ class Employees(Base):
     role_id = Column(Integer, ForeignKey(Roles.id))
     
 class AccessRecords(Base):
-    __tablename__ = "accessRecords"
+    __tablename__ = "accessrecords"
     
     id = Column(Integer, primary_key = True)
     entry_time = Column(TIMESTAMP)
@@ -153,7 +153,7 @@ class MaterialHistory(Base):
     warehouse_id = Column(Integer, ForeignKey(Warehouses.id))
 
 def create_connection():
-    engine = create_engine("postgresql://postgres@localhost:5432/floor", echo = True)
+    engine = create_engine("postgresql://admin:root@localhost:5432/floor", echo = True)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session(bind=engine)

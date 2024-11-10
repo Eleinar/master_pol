@@ -2,30 +2,37 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineE
 from PySide6.QtGui import QFont
 import modules
 
-class AddPartnerWindow(QDialog):
-    def __init__(self, db_session, parent=None):
-        super(AddPartnerWindow, self).__init__(parent)
-        self.setWindowTitle("Новый партнёр")
+class EditPartnerWindow(QDialog):
+    def __init__(self, db_session, partner_id, parent=None):
+        super(EditPartnerWindow, self).__init__(parent)
+        self.setWindowTitle("Редактирование партнёра")
         self.setGeometry(300, 200, 400, 500)
         
         self.db_session = db_session
+        self.partner_id = partner_id
+
+        # Загрузка данных партнёра
+        self.partner = self.db_session.query(modules.Partners).get(self.partner_id)
         
         # Основной макет
         layout = QVBoxLayout(self)
         
         # Поля ввода
-        self.company_name_input = QLineEdit()
+        self.company_name_input = QLineEdit(self.partner.company_name)
         self.type_input = QComboBox()
-        self.rating_input = QLineEdit()
-        self.address_input = QLineEdit()
-        self.director_input = QLineEdit()
-        self.phone_input = QLineEdit()
-        self.email_input = QLineEdit()
+        self.rating_input = QLineEdit(str(self.partner.rating))
+        self.address_input = QLineEdit(self.partner.legal_address)
+        self.director_input = QLineEdit(self.partner.director_name)
+        self.phone_input = QLineEdit(self.partner.phone)
+        self.email_input = QLineEdit(self.partner.email)
 
         # Заполнение выпадающего списка типов компаний
         company_types = self.db_session.query(modules.CompanyType).all()
         for company_type in company_types:
             self.type_input.addItem(company_type.company_type, company_type.id)
+            # Устанавливаем текущий тип компании
+            if company_type.id == self.partner.type_id:
+                self.type_input.setCurrentText(company_type.company_type)
 
         # Добавляем метки и поля в макет
         fields = [
@@ -63,40 +70,26 @@ class AddPartnerWindow(QDialog):
         layout.addLayout(button_layout)
 
     def save_partner(self):
-        # Получение данных из полей ввода
+        # Обновление данных партнёра из полей ввода
         try:
-            company_name = self.company_name_input.text()
-            type_id = self.type_input.currentData()
-            rating = int(self.rating_input.text())
-            address = self.address_input.text()
-            director = self.director_input.text()
-            phone = self.phone_input.text()
-            email = self.email_input.text()
+            self.partner.company_name = self.company_name_input.text()
+            self.partner.type_id = self.type_input.currentData()
+            self.partner.rating = int(self.rating_input.text())
+            self.partner.legal_address = self.address_input.text()
+            self.partner.director_name = self.director_input.text()
+            self.partner.phone = self.phone_input.text()
+            self.partner.email = self.email_input.text()
         except Exception as e:
             self.db_session.rollback()
             QMessageBox.critical(self, "Ошибка", f"Введены некорректные занчения: {e}")
             return
-        # Создание записи для нового партнёра
+
+        # Сохранение изменений в базе данных
         try:
-            new_partner = modules.Partners(
-                company_name=company_name,
-                type_id=type_id,
-                rating=rating,
-                legal_address=address,
-                director_name=director,
-                phone=phone,
-                email=email
-            )
-        except Exception as e:
-            self.db_session.rollback()
-            QMessageBox.critical(self, "Ошибка", f"Введены некорректные занчения: {e}")
-            return
-        # Добавление и сохранение записи в базе данных
-        try:
-            self.db_session.add(new_partner)
             self.db_session.commit()
-            QMessageBox.information(self, "Успешно", "Партнёр добавлен!")
+            QMessageBox.information(self, "Успешно", "Данные партнёра обновлены!")
             self.accept()
         except Exception as e:
             self.db_session.rollback()
-            QMessageBox.critical(self, "Ошибка", f"Не удалось добавить партнёра: {e}")
+            QMessageBox.critical(self, "Ошибка", f"Не удалось обновить данные партнёра: {e}")
+
