@@ -1,4 +1,4 @@
-create table ProductTypes(
+create table producttypes(
 id serial primary key,
 type_name varchar(30),
 coefficient float
@@ -6,25 +6,25 @@ coefficient float
 
 create table Products(
 id serial primary key,
-product_type_id int references ProductTypes(id),
+product_type_id int references producttypes(id),
 product_name varchar(100),
 scu varchar(10),
 min_partner_price float
 );
 
-create table SalesLocations(
+create table saleslocations(
 id serial primary key,
 location_name varchar(100)
 );
 
-create table CompanyType(
+create table companytype(
 id serial primary key,
 company_type varchar(5)
 );
 
-create table Partners(
+create table partners(
 id serial primary key,
-type_id int references CompanyType(id),
+type_id int references companytype(id),
 company_name varchar(50),
 legal_address varchar(100),
 inn varchar(10),
@@ -34,84 +34,84 @@ email varchar(50),
 rating int 
 );
 
-create table Partner_Products(
+create table partner_products(
 id serial primary key,
-partner_id int references Partners(id),
-product_id int references Products(id),
+partner_id int references partners(id),
+product_id int references products(id),
 quantity int,
-delivery_date date
+sale_date date
 );
 
-create table HealthStatuses(
+create table healthstatuses(
 id serial primary key,
 status varchar(20)
 );
 
-create table FamilyStatuses(
+create table familystatuses(
 id serial primary key,
 status varchar(20)
 );
 
-create table Roles(
+create table roles(
 id serial primary key,
 role_name varchar(20)
 );
 
-create table Employees(
+create table employees(
 id serial primary key,
 employee_name varchar(50),
 passport varchar,
 bank_account varchar(50),
-family_status_id int references FamilyStatuses(id),
-health_status_id int references HealthStatuses(id),
+family_status_id int references familystatuses(id),
+health_status_id int references sealthstatuses(id),
 role_id int references Roles(id)
 );
 
-create table AccessRecords(
+create table accessrecords(
 id serial primary key,
 entry_time timestamp,
 exit_time timestamp,
-employee_id int references Employees(id)
+employee_id int references employees(id)
 );
 
-create table MaterialTypes(
+create table materialtypes(
 id serial primary key,
 type_name varchar(30),
 defect_percent float
 );
 
-create table UnitTypes(
+create table unittypes(
 id serial primary key,
 unit_name varchar(30)
 );
 
-create table Materials(
+create table materials(
 id serial primary key,
-material_type_id int references MaterialTypes(id),
+material_type_id int references materialtypes(id),
 material_name varchar(50),
 package_quantity int,
-unit_id int references UnitTypes(id),
+unit_id int references unittypes(id),
 description varchar,
 material_cost float,
 stock_quantity int,
 min_quantity int
 );
 
-create table Warehouses(
+create table warehouses(
 id serial primary key,
 warehouse_name varchar(30)
 );
 
-create table OperationType(
+create table operationtype(
 id serial primary key,
 operation_type varchar(30)
 );
 
-create table MaterialHistory(
+create table materialhistory(
 id serial primary key,
-material_id int references Materials(id),
+material_id int references materials(id),
 operation_date date,
-operation_type_id int references OperationType(id),
+operation_type_id int references operationtype(id),
 quantity int,
-warehouse_id int references Warehouses(id)
+warehouse_id int references warehouses(id)
 );

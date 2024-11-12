@@ -1,12 +1,14 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QPushButton, QMessageBox)
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QIcon
 import modules
 
 class EditPartnerWindow(QDialog):
     def __init__(self, db_session, partner_id, parent=None):
         super(EditPartnerWindow, self).__init__(parent)
         self.setWindowTitle("Редактирование партнёра")
+        self.setWindowIcon(QIcon("master_pol/logo.png"))
         self.setGeometry(300, 200, 400, 500)
+        self.setStyleSheet("background-color: white")
         
         self.db_session = db_session
         self.partner_id = partner_id
@@ -63,6 +65,7 @@ class EditPartnerWindow(QDialog):
         for button in [save_button, cancel_button]:
             button.setFixedHeight(40)
             button.setStyleSheet("background-color: #67BA80")
+            button.setStyleSheet("background-color: #67BA80; color: white; font-weight: bold")
         
         button_layout.addWidget(save_button)
         button_layout.addWidget(cancel_button)

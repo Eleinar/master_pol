@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QScrollArea, QFrame, QLabel, QDialog, QMessageBox)
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QIcon, QPixmap
+
 from sales_history_window import SalesHistoryWindow
 from sqlalchemy import func
 import sys
@@ -14,7 +15,9 @@ class PartnerWindow(QMainWindow):
     def __init__(self):
         super(PartnerWindow, self).__init__()
         self.setWindowTitle("Список партнёров")
+        self.setWindowIcon(QIcon("master_pol/logo.png"))
         self.setGeometry(100, 100, 800, 600)
+        self.setStyleSheet("background-color: white")
         
         # Подключение к базе данных
         try:
@@ -39,10 +42,16 @@ class PartnerWindow(QMainWindow):
         partner_list_button = QPushButton("Список партнёров")
 
         for button in [new_partner_button, history_button, partner_list_button]:
-            button.setFixedWidth(120)
+            button.setFixedWidth(140)
             button.setFixedHeight(40)
-            button.setStyleSheet("background-color: #67BA80")
+            button.setStyleSheet("background-color: #67BA80; color: white; font-weight: bold")
+            
+        logo_label = QLabel()
+        logo = QPixmap("master_pol/logo.png")
+        logo_label.setPixmap(logo.scaled(100,100,Qt.KeepAspectRatio))
+        logo_label.setAlignment(Qt.AlignLeft)
         
+        menu_layout.addWidget(logo_label)
         menu_layout.addWidget(new_partner_button)
         menu_layout.addWidget(history_button)
         menu_layout.addWidget(partner_list_button)
@@ -53,9 +62,9 @@ class PartnerWindow(QMainWindow):
         scroll_area.setWidgetResizable(True)
         
         self.card_container = QWidget()
+        
         self.card_layout = QVBoxLayout(self.card_container)
         self.card_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
-        
         # Загрузка карточек партнёров
         self.loadPartnerCards()
         
@@ -124,6 +133,10 @@ class PartnerWindow(QMainWindow):
         layout.addWidget(director_label)
         layout.addWidget(phone_label)
         layout.addWidget(rating_label)
+        
+        card.mouseDoubleClickEvent = lambda event, pid=partner.id: self.onClickEditPartner(pid)
+        card.mousePressEvent = lambda event: card.setStyleSheet("background-color: #67BA80; border-radius: 8px;")
+        card.mouseReleaseEvent = lambda event: card.setStyleSheet("background-color: #F4E8D3; border-radius: 8px;")
 
         return card
 

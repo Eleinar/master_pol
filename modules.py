@@ -16,7 +16,7 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 
 class ProductTypes(Base):
-    __tablename__ = "productTypes"
+    __tablename__ = "producttypes"
     
     id = Column(Integer, primary_key = True)
     type_name = Column(String)
@@ -32,7 +32,7 @@ class Products(Base):
     min_partner__price = Column(Float)
 
 class SalesLocations(Base):
-    __tablename__ = "salesLocations"
+    __tablename__ = "saleslocations"
     
     id = Column(Integer, primary_key = True)
     location_name = Column(String)
@@ -65,7 +65,7 @@ class Partner_Products(Base):
     partner_id = Column(Integer,ForeignKey(Partners.id))
     product_id = Column(Integer,ForeignKey(Products.id))
     quantity = Column(Integer)
-    delivery_date = Column(Date)
+    sale_date = Column(Date)
     
 class HealthStatuses(Base):
     __tablename__ = "healthstatuses"
@@ -74,7 +74,7 @@ class HealthStatuses(Base):
     status = Column(String)
     
 class FamilyStatuses(Base):
-    __tablename__ = "familyStatuses"
+    __tablename__ = "familystatuses"
     
     id = Column(Integer, primary_key = True)
     status = Column(String)
@@ -105,14 +105,14 @@ class AccessRecords(Base):
     employee_id = Column(Integer, ForeignKey(Employees.id))
     
 class MaterialTypes(Base):
-    __tablename__ = "maerialTypes"
+    __tablename__ = "materialtypes"
     
     id = Column(Integer, primary_key = True)
     type_name = Column(String)
     defect_percent = Column(Float)
     
 class UnitTypes(Base):
-    __tablename__ = "unitTypes"
+    __tablename__ = "unittypes"
     
     id = Column(Integer, primary_key = True)
     unit_type = Column(String)
@@ -137,13 +137,13 @@ class Warehouses(Base):
     warehouse_name = Column(String)
     
 class OperationType(Base):
-    __tablename__ = "operationType"
+    __tablename__ = "operationtype"
     
     id = Column(Integer, primary_key = True)
     operation_type = Column(String)
     
 class MaterialHistory(Base):
-    __tablename__ = "materialHistory"
+    __tablename__ = "materialhistory"
     
     id = Column(Integer, primary_key = True)
     material_id = Column(Integer, ForeignKey(Materials.id))
@@ -153,7 +153,7 @@ class MaterialHistory(Base):
     warehouse_id = Column(Integer, ForeignKey(Warehouses.id))
 
 def create_connection():
-    engine = create_engine("postgresql://admin:root@localhost:5432/floor", echo = True)
+    engine = create_engine("postgresql://postgres@localhost:5432/floor", echo = True)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session(bind=engine)
