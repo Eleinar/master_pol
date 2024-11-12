@@ -153,7 +153,7 @@ class MaterialHistory(Base):
     warehouse_id = Column(Integer, ForeignKey(Warehouses.id))
 
 def create_connection():
-    engine = create_engine("postgresql://postgres@localhost:5432/floor", echo = True)
+    engine = create_engine("postgresql://admin:root@localhost:5432/floor", echo = True)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session(bind=engine)

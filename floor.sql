@@ -63,7 +63,7 @@ employee_name varchar(50),
 passport varchar,
 bank_account varchar(50),
 family_status_id int references familystatuses(id),
-health_status_id int references sealthstatuses(id),
+health_status_id int references healthstatuses(id),
 role_id int references Roles(id)
 );
 
